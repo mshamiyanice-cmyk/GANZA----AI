@@ -1,6 +1,6 @@
-# Gemini Live API React Demo
+# GANZA AI
 
-A React-based client for Google's Gemini Live API, featuring real-time audio/video streaming and a WebSocket proxy for secure authentication.
+A React-based voice AI application powered by Google's Gemini Live API, featuring real-time audio/video streaming and a WebSocket proxy for secure authentication.
 
 [![React Demo Video](https://img.youtube.com/vi/wCrz8tw6xXs/hqdefault.jpg)](https://www.youtube.com/watch?v=wCrz8tw6xXs)
 
@@ -89,6 +89,6 @@ The app uses AudioWorklets for low-latency audio processing:
 
 ## Configuration
 
-- **Model**: Defaults to `gemini-live-2.5-flash-native-audio`
+- **Model**: Defaults to `gemini-2.0-flash-exp` (use `gemini-live-2.5-flash-native-audio` if you have access)
 - **Voice**: Configurable in `LiveAPIDemo.jsx` (Puck, Charon, etc.)
 - **Proxy Port**: Default `8080` (set in `server.py`)

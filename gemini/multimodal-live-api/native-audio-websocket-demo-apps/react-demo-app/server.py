@@ -13,28 +13,80 @@ import json
 import ssl
 import certifi
 import os
+from pathlib import Path
 from websockets.legacy.server import WebSocketServerProtocol
 from websockets.legacy.protocol import WebSocketCommonProtocol
 from websockets.exceptions import ConnectionClosed
+
+# Load environment variables
+from dotenv import load_dotenv
+
+# Load .env file from the same directory as this script
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # Google auth imports
 import google.auth
 from google.auth.transport.requests import Request
 
-DEBUG = False  # Set to True for verbose logging
-WS_PORT = 8080    # Port for WebSocket server
+# Configuration from environment variables
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+WS_PORT = int(os.getenv('WS_PORT', '8080'))
+GCP_PROJECT_ID = os.getenv('GCP_PROJECT_ID', '')
+GCP_REGION = os.getenv('GCP_REGION', 'us-central1')
+DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'gemini-live-2.5-flash-native-audio')
+# Get credentials path, strip whitespace, use None if empty
+_creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '').strip()
+GOOGLE_APPLICATION_CREDENTIALS = _creds_path if _creds_path else None
 
 
 def generate_access_token():
-    """Retrieves an access token using Google Cloud default credentials."""
+    """Retrieves an access token using Google Cloud credentials from environment."""
     try:
-        creds, _ = google.auth.default()
+        # Use service account if path provided, otherwise use ADC
+        if GOOGLE_APPLICATION_CREDENTIALS:
+            # Verify the file exists
+            if not os.path.exists(GOOGLE_APPLICATION_CREDENTIALS):
+                raise FileNotFoundError(f"Service account file not found: {GOOGLE_APPLICATION_CREDENTIALS}")
+            # Set environment variable for google.auth to use
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
+            print(f"🔑 Using service account: {GOOGLE_APPLICATION_CREDENTIALS}")
+        else:
+            # Ensure GOOGLE_APPLICATION_CREDENTIALS is not set to empty string (use ADC)
+            # If it's set to empty string in .env, it will be in os.environ as empty string
+            # We need to remove it so google.auth.default() uses ADC instead
+            if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+                env_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '').strip()
+                if not env_creds:
+                    # It's empty, remove it to use ADC
+                    del os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+            print("🔑 Using Application Default Credentials (ADC)")
+        
+        # Get credentials - this will use ADC if GOOGLE_APPLICATION_CREDENTIALS is not set
+        creds, project = google.auth.default()
+        
+        # Verify project matches if specified
+        if GCP_PROJECT_ID and project and project != GCP_PROJECT_ID:
+            print(f"⚠️ Warning: Credentials project ({project}) doesn't match GCP_PROJECT_ID ({GCP_PROJECT_ID})")
+        
         if not creds.valid:
+            print("🔄 Refreshing access token...")
             creds.refresh(Request())
+        
+        print(f"✅ Access token generated for project: {project or GCP_PROJECT_ID or 'default'}")
         return creds.token
+    except FileNotFoundError as e:
+        print(f"❌ Error: {e}")
+        print(f"   Make sure the service account file path is correct in .env")
+        return None
     except Exception as e:
-        print(f"Error generating access token: {e}")
-        print("Make sure you're logged in with: gcloud auth application-default login")
+        print(f"❌ Error generating access token: {e}")
+        if GOOGLE_APPLICATION_CREDENTIALS:
+            print(f"   Check if service account file exists: {GOOGLE_APPLICATION_CREDENTIALS}")
+            print(f"   Make sure the file path is correct and the service account has roles/aiplatform.user role")
+        else:
+            print("   Make sure you're logged in with: gcloud auth application-default login")
+            print("   Run: gcloud auth application-default login --scopes=https://www.googleapis.com/auth/cloud-platform")
         return None
 
 
@@ -210,16 +262,31 @@ async def main():
     """
     Starts the WebSocket server.
     """
+    # Validate configuration
+    if not GCP_PROJECT_ID:
+        print("⚠️ Warning: GCP_PROJECT_ID not set in .env file")
+        print("   The frontend will need to provide project ID in the connection message")
+    
+    # Test authentication on startup
+    print("🔍 Testing authentication...")
+    token = generate_access_token()
+    if not token:
+        print("❌ Authentication test failed. Please check your credentials.")
+        print("   See .env.example for configuration options")
+        return
+    
     print(f"""
 ╔════════════════════════════════════════════════════════════╗
-║     Gemini Live API Proxy Server                          ║
+║     Gemini Live API Proxy Server (Vertex AI)              ║
 ╠════════════════════════════════════════════════════════════╣
 ║                                                            ║
 ║  🔌 WebSocket Proxy: ws://localhost:{WS_PORT:<5}                   ║
+║  📁 Project ID: {GCP_PROJECT_ID or '(from client)':<35} ║
+║  🌍 Region: {GCP_REGION:<43} ║
+║  🤖 Default Model: {DEFAULT_MODEL:<32} ║
 ║                                                            ║
 ║  Authentication:                                           ║
-║  • Uses Google Cloud default credentials                  ║
-║  • Run: gcloud auth application-default login             ║
+║  {'• Service Account: ' + GOOGLE_APPLICATION_CREDENTIALS if GOOGLE_APPLICATION_CREDENTIALS else '• Using Application Default Credentials (ADC)':<54} ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
 """)

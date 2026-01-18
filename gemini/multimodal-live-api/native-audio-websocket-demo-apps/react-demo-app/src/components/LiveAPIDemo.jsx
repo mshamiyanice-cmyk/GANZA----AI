@@ -12,7 +12,7 @@ import "./LiveAPIDemo.css";
 const LiveAPIDemo = () => {
   // Connection State
   const [connected, setConnected] = useState(false);
-  const [debugInfo, setDebugInfo] = useState("Ready to connect...");
+  const [debugInfo, setDebugInfo] = useState("GANZA AI - Ready to connect...");
   const [setupJson, setSetupJson] = useState(null);
 
   // Configuration State
@@ -24,7 +24,7 @@ const LiveAPIDemo = () => {
   );
   const [model, setModel] = useState(
     localStorage.getItem("model") ||
-      "gemini-live-2.5-flash-native-audio"
+      "gemini-2.5-flash-native-audio-preview-12-2025"
   );
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const LiveAPIDemo = () => {
     localStorage.setItem("model", model);
   }, [proxyUrl, projectId, model]);
   const [systemInstructions, setSystemInstructions] = useState(
-    "You are a helpful assistant. Be concise and friendly."
+    "You are GANZA AI, a helpful and friendly AI assistant. Be concise, natural, and engaging in your conversations."
   );
   const [voice, setVoice] = useState("Puck");
   const [temperature, setTemperature] = useState(1.0);
@@ -154,6 +154,11 @@ const LiveAPIDemo = () => {
         break;
       case MultimodalLiveResponseType.AUDIO:
         if (audioPlayerRef.current) {
+          // LATENCY TRACKING - DISABLED (commented out)
+          // Metric 4: Track when audio actually starts playing
+          // if (clientRef.current?.latencyTracker && !clientRef.current.latencyTracker.firstAudioChunkPlayedTime) {
+          //   clientRef.current.latencyTracker.recordAudioChunkPlayed();
+          // }
           audioPlayerRef.current.play(message.data);
         }
         break;
@@ -425,7 +430,7 @@ const LiveAPIDemo = () => {
     <div className="live-api-demo">
       <div className="toolbar">
         <div className="toolbar-left">
-          <h1>Gemini Live API React Demo</h1>
+          <h1>GANZA AI</h1>
         </div>
         <div className="toolbar-center">
           <div className="dropdown">

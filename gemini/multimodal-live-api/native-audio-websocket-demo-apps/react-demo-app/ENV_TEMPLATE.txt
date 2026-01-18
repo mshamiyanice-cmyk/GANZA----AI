@@ -1,0 +1,54 @@
+# ============================================
+# GEMINI LIVE API - ENVIRONMENT VARIABLES
+# ============================================
+# Copy this file to .env and fill in your values
+# DO NOT commit .env to git (it's in .gitignore)
+
+# ============================================
+# GOOGLE CLOUD CREDENTIALS
+# ============================================
+
+# Option 1: Service Account Key File (Recommended for Production)
+# Path to your service account JSON key file
+# Example: C:\Users\HP\gemini-live-key.json (Windows)
+# Example: /home/user/gemini-live-key.json (Linux/Mac)
+GOOGLE_APPLICATION_CREDENTIALS=
+
+# Option 2: Use Application Default Credentials (ADC)
+# If GOOGLE_APPLICATION_CREDENTIALS is empty, ADC will be used
+# Make sure you've run: gcloud auth application-default login
+# Leave empty to use ADC
+
+# ============================================
+# GCP PROJECT CONFIGURATION
+# ============================================
+
+# Your Google Cloud Project ID
+# Example: ganza-ai-sovereign-2026
+GCP_PROJECT_ID=
+
+# GCP Region (default: us-central1)
+# Available regions: us-central1, us-east1, europe-west1, etc.
+GCP_REGION=us-central1
+
+# ============================================
+# GEMINI MODEL CONFIGURATION
+# ============================================
+
+# Gemini Model Name
+# Options:
+#   - gemini-live-2.5-flash-native-audio (Native Audio - Recommended)
+#   - gemini-2.0-flash-exp (Experimental)
+#   - gemini-1.5-pro (Standard)
+DEFAULT_MODEL=gemini-live-2.5-flash-native-audio
+
+# ============================================
+# SERVER CONFIGURATION
+# ============================================
+
+# WebSocket Proxy Port (default: 8080)
+WS_PORT=8080
+
+# Debug Mode (true/false)
+# Set to true for verbose logging
+DEBUG=false

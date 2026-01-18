@@ -2,6 +2,10 @@
  * Gemini Live API Utilities
  */
 
+// LATENCY TRACKING - DISABLED (commented out)
+// import { LatencyTracker } from './latency-tracker.js';
+// const latencyTracker = new LatencyTracker();
+
 // Response type constants
 export const MultimodalLiveResponseType = {
   TEXT: "TEXT",
@@ -170,6 +174,9 @@ export class GeminiLiveAPI {
       console.log("Default onClose");
     };
 
+    // LATENCY TRACKING - DISABLED (commented out)
+    // this.latencyTracker = latencyTracker;
+
     console.log("Created Gemini Live API object: ", this);
   }
 
@@ -254,6 +261,26 @@ export class GeminiLiveAPI {
     // console.log("Message received: ", messageEvent);
     const messageData = JSON.parse(messageEvent.data);
     const message = new MultimodalLiveResponseMessage(messageData);
+    
+    // LATENCY TRACKING - DISABLED (commented out)
+    // Detect when model generation starts (server-side)
+    // Check if modelTurn exists in raw data (indicates generation started)
+    // if (messageData?.serverContent?.modelTurn && !this.latencyTracker.modelGenerationStartTime) {
+    //   this.latencyTracker.recordModelGenerationStart();
+    // }
+    
+    // LATENCY TRACKING - DISABLED (commented out)
+    // Detect when user finishes speaking (Metric 1)
+    // if (message.type === MultimodalLiveResponseType.INPUT_TRANSCRIPTION && message.data?.finished) {
+    //   this.latencyTracker.recordUserFinishedSpeaking();
+    // }
+    
+    // LATENCY TRACKING - DISABLED (commented out)
+    // Detect when first audio chunk is generated (Metric 3 - server-side)
+    // if (message.type === MultimodalLiveResponseType.AUDIO) {
+    //   this.latencyTracker.recordAudioChunkGenerated();
+    // }
+    
     this.onReceiveResponse(message);
   }
 
@@ -409,6 +436,8 @@ export class GeminiLiveAPI {
   }
 
   sendAudioMessage(base64PCM) {
+    // LATENCY TRACKING - DISABLED (commented out)
+    // this.latencyTracker.recordAudioSent();
     this.sendRealtimeInputMessage(base64PCM, "audio/pcm");
   }
 

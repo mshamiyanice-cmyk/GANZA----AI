@@ -1,5 +1,8 @@
 :root {
-  /* Google Brand Colors */
+  /* GANZA AI Brand Colors - Rwandan Theme */
+  --ganza-blue: #00A5E1;
+  --ganza-yellow: #FAD300;
+  --ganza-green: #1A603A;
   --google-blue: #4285f4;
   --google-red: #db4437;
   --google-yellow: #f4b400;
@@ -42,9 +45,10 @@ body {
 
 .toolbar-left h1 {
   margin: 0;
-  font-size: 1.2rem;
-  color: #202124;
-  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--ganza-blue);
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .toolbar-center {
